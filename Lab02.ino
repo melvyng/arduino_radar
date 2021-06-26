@@ -6,38 +6,31 @@
 
 char auth[] = "jS8YjyVdKQTiKTig2oUbag786qBm5Ecs";
 
-BlynkTimer timer;
+// Mac address should be different for each device in your LAN
+byte arduino_mac[] = { 0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
+IPAddress arduino_ip (192,168,0,2);
+IPAddress dns_ip     ( 192,168,0,1);
+IPAddress gateway_ip ( 192,168,0,1);
+IPAddress subnet_mask(255,255,255,0);
 
+#define W5100_CS  10
+#define SDCARD_CS 4
 //Prueba de codigo remoto fin
 
 // Include para la libreria Servo
 #include <Servo.h>
+
 // Define el pin Trig y Echo de el Sensor Ultrasonico
 const int servoPin = 9;
 const int trigPin = 8;
 const int echoPin = 7;
-const int speaker = 4;
+const int speaker = 3;
 
 // Variables para la duracion y la distancia
 long duracion;
 int distancia;
 
 Servo myServo; // Crea un objeto servo para controlar el servo motor
-
-void myTimerEvent()
-{
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V3, millis() / 1000);
-}
-
-
-void myAlert()
-{
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V1, 1);
-}
 
 void setup() {
   pinMode(trigPin, OUTPUT); // Configurar el trigPin como Output
@@ -47,16 +40,12 @@ void setup() {
   myServo.attach(servoPin); // Define en que pin esta el servo motor conectado
 
   //Prueba de codigo remoto inicio
-  Blynk.begin(auth);
-  timer.setInterval(1000L, myTimerEvent);
-  timer.setInterval(1L, myAlert);
+  //Blynk.begin(auth);
+  Blynk.begin(auth, "blynk-cloud.com", 80, arduino_ip, dns_ip, gateway_ip, subnet_mask, arduino_mac);
   //Prueba de codigo remoto fin
 }
 void loop() {
   Blynk.run();
-  timer.run(); // Initiates BlynkTimer
-  //char dato=Serial.read();
-  //if(dato == '1'){
 
   // rota el servo motor de 0 a 180 grados
   for (int i = 0; i <= 180; i++) {
@@ -64,7 +53,7 @@ void loop() {
     delay(30);
     distancia = calcularDistancia();// Llama a una funcion para calcular la distancia medida por el sensor Ultrasonico para cada grado
 
-    //Serial.print("Grado: ");
+    Serial.print("Grado: ");
     Serial.print(i); // Envia el grado actual al Puerto Serial
     Serial.print(","); // Envía un carácter de adición justo al lado del valor anterior que se necesita más adelante en el Processing IDE para la indexación
     //Serial.print("Distancia: ");
@@ -77,18 +66,13 @@ void loop() {
     myServo.write(i);
     delay(30);
     distancia = calcularDistancia();
-    //Serial.print("Grado: ");
+    Serial.print("Grado: ");
     Serial.print(i);
     Serial.print(",");
     //Serial.print("Distancia: ");
     Serial.print(distancia);
     Serial.print(".");
   }
-  //}else if(dato == '0'){
-  //myServo.write(90);
-  //delay(3000);
-  //analogWrite(speaker, 0);
-  //}
   
 }
 // Funcion para calcular la distancia medida por el sensor Ultrasonic
